@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -461,7 +462,8 @@ func fillLivecommentsResponse(ctx context.Context, tx *sqlx.Tx, livecommentModel
 
 	commentOwners := []UserModel{}
 	commentOwnersMap := map[int64]UserModel{}
-	if err := tx.GetContext(ctx, &commentOwners, "SELECT * FROM users WHERE id IN (?)", userIDs); err != nil {
+	commentOwnerIDsStr := strings.Trim(strings.Join(strings.Fields(fmt.Sprint(userIDs)), ","), "[]")
+	if err := tx.GetContext(ctx, &commentOwners, "SELECT * FROM users WHERE id IN ("+commentOwnerIDsStr+")"); err != nil {
 		return []Livecomment{}, err
 	}
 	for _, commentOwner := range commentOwners {
@@ -470,7 +472,8 @@ func fillLivecommentsResponse(ctx context.Context, tx *sqlx.Tx, livecommentModel
 
 	livestreams := []LivestreamModel{}
 	livestreamsMap := map[int64]LivestreamModel{}
-	if err := tx.GetContext(ctx, &livestreams, "SELECT * FROM livestreams WHERE id IN (?)", livestreamIDs); err != nil {
+	livestreamIDsStr := strings.Trim(strings.Join(strings.Fields(fmt.Sprint(livestreamIDs)), ","), "[]")
+	if err := tx.GetContext(ctx, &livestreams, "SELECT * FROM livestreams WHERE id IN ("+livestreamIDsStr+")"); err != nil {
 		return []Livecomment{}, err
 	}
 	for _, livestream := range livestreams {
