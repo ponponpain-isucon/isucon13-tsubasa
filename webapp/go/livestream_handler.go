@@ -575,26 +575,28 @@ func fillLivestreamsResponse(ctx context.Context, tx *sqlx.Tx, livestreamModels 
 		}
 	}
 
-	fmt.Println("livestreamIDToTags", livestreamIDToTags)
 	for i := range livestreamModels {
 		Owner, err := fillUserResponse(ctx, tx, userIDToLivestreamOwner[livestreamModels[i].UserID])
 		if err != nil {
 			return []Livestream{}, err
 		}
 
+		Tags, ok := livestreamIDToTags[livestreamModels[i].ID]
+		if !ok {
+			Tags = []Tag{}
+		}
+
 		livestream := Livestream{
 			ID:           livestreamModels[i].ID,
 			Owner:        Owner,
 			Title:        livestreamModels[i].Title,
-			Tags:         livestreamIDToTags[livestreamModels[i].ID],
+			Tags:         Tags,
 			Description:  livestreamModels[i].Description,
 			PlaylistUrl:  livestreamModels[i].PlaylistUrl,
 			ThumbnailUrl: livestreamModels[i].ThumbnailUrl,
 			StartAt:      livestreamModels[i].StartAt,
 			EndAt:        livestreamModels[i].EndAt,
 		}
-		fmt.Println("Tags", livestreamIDToLivestreamTags[livestream.ID])
-		fmt.Println("Tags", livestream.Tags)
 		livestreams[i] = livestream
 	}
 
