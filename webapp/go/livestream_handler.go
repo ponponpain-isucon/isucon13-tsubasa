@@ -542,10 +542,10 @@ func fillLivestreamsResponse(ctx context.Context, tx *sqlx.Tx, livestreamModels 
 	livestreamOwnersMap := map[int64]UserModel{}
 	query, params, err := sqlx.In("SELECT * FROM users WHERE id IN (?)", userIDs)
 	if err != nil {
-		return []Livestream{}, err
+		return []Livestream{}, echo.NewHTTPError(http.StatusInternalServerError, "failed to construct query: "+err.Error())
 	}
 	if err := tx.SelectContext(ctx, &livestreamOwners, query, params...); err != nil {
-		return []Livestream{}, err
+		return []Livestream{}, echo.NewHTTPError(http.StatusInternalServerError, "failed to get users: "+err.Error())
 	}
 	for _, livestreamOwner := range livestreamOwners {
 		livestreamOwnersMap[livestreamOwner.ID] = livestreamOwner
@@ -555,10 +555,10 @@ func fillLivestreamsResponse(ctx context.Context, tx *sqlx.Tx, livestreamModels 
 	tagsMap := map[int64][]*LivestreamTagModel{}
 	query, params, err = sqlx.In("SELECT * FROM livestream_tags WHERE livestream_id IN (?)", livestreamIDs)
 	if err != nil {
-		return []Livestream{}, err
+		return []Livestream{}, echo.NewHTTPError(http.StatusInternalServerError, "failed to construct query: "+err.Error())
 	}
 	if err := tx.SelectContext(ctx, &tags, query, params...); err != nil {
-		return []Livestream{}, err
+		return []Livestream{}, echo.NewHTTPError(http.StatusInternalServerError, "failed to get livestream tags: "+err.Error())
 	}
 	for _, tag := range tags {
 		tagsMap[tag.LivestreamID] = append(tagsMap[tag.LivestreamID], tag)
@@ -569,7 +569,7 @@ func fillLivestreamsResponse(ctx context.Context, tx *sqlx.Tx, livestreamModels 
 		for i := range tags {
 			tagModel := TagModel{}
 			if err := tx.GetContext(ctx, &tagModel, "SELECT * FROM tags WHERE id = ?", tags[i].ID); err != nil {
-				return []Livestream{}, err
+				return []Livestream{}, echo.NewHTTPError(http.StatusInternalServerError, "failed to get tag: "+err.Error())
 			}
 
 			tags[i] = Tag(tagModel)
