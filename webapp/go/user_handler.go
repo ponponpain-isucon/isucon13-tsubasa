@@ -147,7 +147,7 @@ func postIconHandler(c echo.Context) error {
 	}
 	defer tx.Rollback()
 
-	if _, err := tx.ExecContext(ctx, "UPDATE users SET icon_hash = ? WHERE user_id = ?", iconHash, userID); err != nil {
+	if _, err := tx.ExecContext(ctx, "UPDATE users SET icon_hash = ? WHERE id = ?", iconHash, userID); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to update icon hash: "+err.Error())
 	}
 
