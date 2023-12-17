@@ -5,6 +5,7 @@ sudo cp /dev/null /var/log/mysql/mysql-slow.log
 
 if [ ! -d "/tmp/icons" ]; then
     sudo mkdir /tmp/icons
+    sudo chmod 777 /tmp/icons
 fi
 sudo rm -rf /tmp/icons/*
 
