@@ -167,33 +167,9 @@ func fillReactionResponse(ctx context.Context, tx *sqlx.Tx, reactionModel Reacti
 }
 
 func fillReactionsResponse(ctx context.Context, tx *sqlx.Tx, reactionModels []ReactionModel) ([]Reaction, error) {
-	// userModel := UserModel{}
-	// if err := tx.GetContext(ctx, &userModel, "SELECT * FROM users WHERE id = ?", reactionModel.UserID); err != nil {
-	// 	return Reaction{}, err
-	// }
-	// user, err := fillUserResponse(ctx, tx, userModel)
-	// if err != nil {
-	// 	return Reaction{}, err
-	// }
-
-	// livestreamModel := LivestreamModel{}
-	// if err := tx.GetContext(ctx, &livestreamModel, "SELECT * FROM livestreams WHERE id = ?", reactionModel.LivestreamID); err != nil {
-	// 	return Reaction{}, err
-	// }
-	// livestream, err := fillLivestreamResponse(ctx, tx, livestreamModel)
-	// if err != nil {
-	// 	return Reaction{}, err
-	// }
-
-	// reaction := Reaction{
-	// 	ID:         reactionModel.ID,
-	// 	EmojiName:  reactionModel.EmojiName,
-	// 	User:       user,
-	// 	Livestream: livestream,
-	// 	CreatedAt:  reactionModel.CreatedAt,
-	// }
-
-	// return reaction, nil
+	if len(reactionModels) == 0 {
+		return []Reaction{}, nil
+	}
 
 	userIDs := make([]int64, len(reactionModels))
 	livestreamIDs := make([]int64, len(reactionModels))
