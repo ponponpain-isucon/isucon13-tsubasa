@@ -105,7 +105,7 @@ func getLivecommentsHandler(c echo.Context) error {
 
 	livecomments, err := fillLivecommentsResponse(ctx, tx, livecommentModels)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "failed to fil livecomments: "+err.Error())
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to fill livecomments: "+err.Error())
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -463,7 +463,7 @@ func fillLivecommentsResponse(ctx context.Context, tx *sqlx.Tx, livecommentModel
 	commentOwners := []UserModel{}
 	commentOwnersMap := map[int64]UserModel{}
 	commentOwnerIDsStr := strings.Trim(strings.Join(strings.Fields(fmt.Sprint(userIDs)), ","), "[]")
-	if err := tx.GetContext(ctx, &commentOwners, "SELECT * FROM users WHERE id IN ("+commentOwnerIDsStr+")"); err != nil {
+	if err := tx.SelectContext(ctx, &commentOwners, "SELECT * FROM users WHERE id IN ("+commentOwnerIDsStr+")"); err != nil {
 		return []Livecomment{}, err
 	}
 	for _, commentOwner := range commentOwners {
@@ -473,7 +473,7 @@ func fillLivecommentsResponse(ctx context.Context, tx *sqlx.Tx, livecommentModel
 	livestreams := []LivestreamModel{}
 	livestreamsMap := map[int64]LivestreamModel{}
 	livestreamIDsStr := strings.Trim(strings.Join(strings.Fields(fmt.Sprint(livestreamIDs)), ","), "[]")
-	if err := tx.GetContext(ctx, &livestreams, "SELECT * FROM livestreams WHERE id IN ("+livestreamIDsStr+")"); err != nil {
+	if err := tx.SelectContext(ctx, &livestreams, "SELECT * FROM livestreams WHERE id IN ("+livestreamIDsStr+")"); err != nil {
 		return []Livecomment{}, err
 	}
 	for _, livestream := range livestreams {
