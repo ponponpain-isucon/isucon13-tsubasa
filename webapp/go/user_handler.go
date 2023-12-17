@@ -113,7 +113,7 @@ func getIconHandler(c echo.Context) error {
 
 	image, err := os.ReadFile(fmt.Sprintf("/tmp/icons/%s.jpg", username))
 	if err != nil {
-		return c.File(fallbackImage)
+		return c.Blob(http.StatusOK, "image/jpeg", []byte(fallbackImage))
 	}
 
 	return c.Blob(http.StatusOK, "image/jpeg", image)
