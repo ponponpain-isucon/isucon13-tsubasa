@@ -102,14 +102,9 @@ func getLivecommentsHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get livecomments: "+err.Error())
 	}
 
-	livecomments := make([]Livecomment, len(livecommentModels))
-	for i := range livecommentModels {
-		livecomment, err := fillLivecommentResponse(ctx, tx, livecommentModels[i])
-		if err != nil {
-			return echo.NewHTTPError(http.StatusInternalServerError, "failed to fil livecomments: "+err.Error())
-		}
-
-		livecomments[i] = livecomment
+	livecomments, err := fillLivecommentsResponse(ctx, tx, livecommentModels)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to fill livecomments: "+err.Error())
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -422,6 +417,7 @@ func moderateHandler(c echo.Context) error {
 	})
 }
 
+// FIXME:
 func fillLivecommentResponse(ctx context.Context, tx *sqlx.Tx, livecommentModel LivecommentModel) (Livecomment, error) {
 	commentOwnerModel := UserModel{}
 	if err := tx.GetContext(ctx, &commentOwnerModel, "SELECT * FROM users WHERE id = ?", livecommentModel.UserID); err != nil {
@@ -451,6 +447,83 @@ func fillLivecommentResponse(ctx context.Context, tx *sqlx.Tx, livecommentModel 
 	}
 
 	return livecomment, nil
+}
+
+func fillLivecommentsResponse(ctx context.Context, tx *sqlx.Tx, livecommentModels []LivecommentModel) ([]Livecomment, error) {
+	if len(livecommentModels) == 0 {
+		return []Livecomment{}, nil
+	}
+
+	livecomments := make([]Livecomment, len(livecommentModels))
+
+	userIDs := []int64{}
+	livestreamIDs := []int64{}
+	for _, livecommentModel := range livecommentModels {
+		fmt.Printf("userID: %d, livestreamID: %d\n", livecommentModel.UserID, livecommentModel.LivestreamID)
+		userIDs = append(userIDs, livecommentModel.UserID)
+		livestreamIDs = append(livestreamIDs, livecommentModel.LivestreamID)
+	}
+
+	commentOwners := []UserModel{}
+	commentOwnersMap := map[int64]UserModel{}
+	query, params, err := sqlx.In("SELECT * FROM users WHERE id IN (?)", userIDs)
+	fmt.Printf("users query: %s\n", query)
+	fmt.Printf("users params: %s\n", params)
+	if err != nil {
+		return []Livecomment{}, echo.NewHTTPError(http.StatusInternalServerError, "failed to construct IN query: "+err.Error())
+	}
+	if err := tx.SelectContext(ctx, &commentOwners, query, params...); err != nil {
+		return []Livecomment{}, echo.NewHTTPError(http.StatusInternalServerError, "failed to select: "+err.Error())
+	}
+	for _, commentOwner := range commentOwners {
+		commentOwnersMap[commentOwner.ID] = commentOwner
+	}
+
+	livestreams := []LivestreamModel{}
+	livestreamsMap := map[int64]LivestreamModel{}
+	query, params, err = sqlx.In("SELECT * FROM livestreams WHERE id IN (?)", livestreamIDs)
+	fmt.Printf("livestreams query: %s\n", query)
+	fmt.Printf("livestreams params: %s\n", params)
+	if err != nil {
+		return []Livecomment{}, echo.NewHTTPError(http.StatusInternalServerError, "failed to construct IN query: "+err.Error())
+	}
+	if err := tx.SelectContext(ctx, &livestreams, query, params...); err != nil {
+		return []Livecomment{}, echo.NewHTTPError(http.StatusInternalServerError, "failed to select: "+err.Error())
+	}
+	for _, livestream := range livestreams {
+		livestreamsMap[livestream.ID] = livestream
+	}
+
+	for i, livecommentModel := range livecommentModels {
+		commentOwner, ok := commentOwnersMap[livecommentModel.UserID]
+		if !ok {
+			return []Livecomment{}, errors.New("comment owner not found")
+		}
+		filledCommentOwner, err := fillUserResponse(ctx, tx, commentOwner)
+		if err != nil {
+			return []Livecomment{}, err
+		}
+
+		livestream, ok := livestreamsMap[livecommentModel.LivestreamID]
+		if !ok {
+			return []Livecomment{}, errors.New("livestream not found")
+		}
+		filledLivestream, err := fillLivestreamResponse(ctx, tx, livestream)
+		if err != nil {
+			return []Livecomment{}, err
+		}
+
+		livecomments[i] = Livecomment{
+			ID:         livecommentModel.ID,
+			User:       filledCommentOwner,
+			Livestream: filledLivestream,
+			Comment:    livecommentModel.Comment,
+			Tip:        livecommentModel.Tip,
+			CreatedAt:  livecommentModel.CreatedAt,
+		}
+	}
+
+	return livecomments, nil
 }
 
 func fillLivecommentReportResponse(ctx context.Context, tx *sqlx.Tx, reportModel LivecommentReportModel) (LivecommentReport, error) {
