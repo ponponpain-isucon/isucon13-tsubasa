@@ -86,8 +86,6 @@ type PostIconResponse struct {
 }
 
 func getIconHandler(c echo.Context) error {
-	ctx := c.Request().Context()
-
 	username := c.Param("username")
 
 	// tx, err := dbConn.BeginTxx(ctx, nil)
