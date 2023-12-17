@@ -551,24 +551,24 @@ func fillLivestreamsResponse(ctx context.Context, tx *sqlx.Tx, livestreamModels 
 		livestreamOwnersMap[livestreamOwner.ID] = livestreamOwner
 	}
 
-	tags := []*LivestreamTagModel{}
-	tagsMap := map[int64][]*LivestreamTagModel{}
+	livestreamTags := []*LivestreamTagModel{}
+	livestreamTagsMap := map[int64][]*LivestreamTagModel{}
 	query, params, err = sqlx.In("SELECT * FROM livestream_tags WHERE livestream_id IN (?)", livestreamIDs)
 	if err != nil {
 		return []Livestream{}, echo.NewHTTPError(http.StatusInternalServerError, "failed to construct query: "+err.Error())
 	}
-	if err := tx.SelectContext(ctx, &tags, query, params...); err != nil {
+	if err := tx.SelectContext(ctx, &livestreamTags, query, params...); err != nil {
 		return []Livestream{}, echo.NewHTTPError(http.StatusInternalServerError, "failed to get livestream tags: "+err.Error())
 	}
-	for _, tag := range tags {
-		tagsMap[tag.LivestreamID] = append(tagsMap[tag.LivestreamID], tag)
+	for _, livestreamTag := range livestreamTags {
+		livestreamTagsMap[livestreamTag.LivestreamID] = append(livestreamTagsMap[livestreamTag.LivestreamID], livestreamTag)
 	}
 
-	for livestreamID, tags := range tagsMap {
-		tags := make([]Tag, len(tags))
-		for i := range tags {
+	for livestreamID, livestramTags := range livestreamTagsMap {
+		tags := make([]Tag, len(livestramTags))
+		for i := range livestramTags {
 			tagModel := TagModel{}
-			if err := tx.GetContext(ctx, &tagModel, "SELECT * FROM tags WHERE id = ?", tags[i].ID); err != nil {
+			if err := tx.GetContext(ctx, &tagModel, "SELECT * FROM tags WHERE id = ?", livestramTags[i].TagID); err != nil {
 				return []Livestream{}, echo.NewHTTPError(http.StatusInternalServerError, "failed to get tag: "+err.Error())
 			}
 
