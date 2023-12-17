@@ -593,6 +593,7 @@ func fillLivestreamsResponse(ctx context.Context, tx *sqlx.Tx, livestreamModels 
 			StartAt:      livestreamModels[i].StartAt,
 			EndAt:        livestreamModels[i].EndAt,
 		}
+		fmt.Println("Tags", livestreamIDToLivestreamTags[livestream.ID])
 		fmt.Println("Tags", livestream.Tags)
 		livestreams[i] = livestream
 	}
