@@ -462,11 +462,13 @@ func fillLivecommentsResponse(ctx context.Context, tx *sqlx.Tx, livecommentModel
 	commentOwners := []UserModel{}
 	commentOwnersMap := map[int64]UserModel{}
 	query, params, err := sqlx.In("SELECT * FROM users WHERE id IN (?)", userIDs)
+	fmt.Printf("users query: %s\n", query)
+	fmt.Printf("users params: %s\n", params)
 	if err != nil {
-		return []Livecomment{}, err
+		return []Livecomment{}, echo.NewHTTPError(http.StatusInternalServerError, "failed to construct IN query: "+err.Error())
 	}
 	if err := tx.SelectContext(ctx, &commentOwners, query, params...); err != nil {
-		return []Livecomment{}, err
+		return []Livecomment{}, echo.NewHTTPError(http.StatusInternalServerError, "failed to select: "+err.Error())
 	}
 	for _, commentOwner := range commentOwners {
 		commentOwnersMap[commentOwner.ID] = commentOwner
@@ -475,11 +477,13 @@ func fillLivecommentsResponse(ctx context.Context, tx *sqlx.Tx, livecommentModel
 	livestreams := []LivestreamModel{}
 	livestreamsMap := map[int64]LivestreamModel{}
 	query, params, err = sqlx.In("SELECT * FROM livestreams WHERE id IN (?)", livestreamIDs)
+	fmt.Printf("livestreams query: %s\n", query)
+	fmt.Printf("livestreams params: %s\n", params)
 	if err != nil {
-		return []Livecomment{}, err
+		return []Livecomment{}, echo.NewHTTPError(http.StatusInternalServerError, "failed to construct IN query: "+err.Error())
 	}
 	if err := tx.SelectContext(ctx, &livestreams, query, params...); err != nil {
-		return []Livecomment{}, err
+		return []Livecomment{}, echo.NewHTTPError(http.StatusInternalServerError, "failed to select: "+err.Error())
 	}
 	for _, livestream := range livestreams {
 		livestreamsMap[livestream.ID] = livestream
