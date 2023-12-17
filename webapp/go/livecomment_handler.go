@@ -456,7 +456,6 @@ func fillLivecommentsResponse(ctx context.Context, tx *sqlx.Tx, livecommentModel
 	userIDs := []int64{}
 	livestreamIDs := []int64{}
 	for _, livecommentModel := range livecommentModels {
-		fmt.Printf("userID: %d, livestreamID: %d\n", livecommentModel.UserID, livecommentModel.LivestreamID)
 		userIDs = append(userIDs, livecommentModel.UserID)
 		livestreamIDs = append(livestreamIDs, livecommentModel.LivestreamID)
 	}
@@ -464,8 +463,6 @@ func fillLivecommentsResponse(ctx context.Context, tx *sqlx.Tx, livecommentModel
 	commentOwners := []UserModel{}
 	commentOwnersMap := map[int64]UserModel{}
 	query, params, err := sqlx.In("SELECT * FROM users WHERE id IN (?)", userIDs)
-	fmt.Printf("users query: %s\n", query)
-	fmt.Printf("users params: %s\n", params)
 	if err != nil {
 		return []Livecomment{}, echo.NewHTTPError(http.StatusInternalServerError, "failed to construct IN query: "+err.Error())
 	}
