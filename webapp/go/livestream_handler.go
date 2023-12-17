@@ -575,6 +575,7 @@ func fillLivestreamsResponse(ctx context.Context, tx *sqlx.Tx, livestreamModels 
 		}
 	}
 
+	fmt.Println("livestreamIDToTags", livestreamIDToTags)
 	for i := range livestreamModels {
 		Owner, err := fillUserResponse(ctx, tx, userIDToLivestreamOwner[livestreamModels[i].UserID])
 		if err != nil {
@@ -592,6 +593,7 @@ func fillLivestreamsResponse(ctx context.Context, tx *sqlx.Tx, livestreamModels 
 			StartAt:      livestreamModels[i].StartAt,
 			EndAt:        livestreamModels[i].EndAt,
 		}
+		fmt.Println("Tags", livestream.Tags)
 		livestreams[i] = livestream
 	}
 
