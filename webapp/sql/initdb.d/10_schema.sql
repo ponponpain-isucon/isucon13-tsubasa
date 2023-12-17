@@ -8,18 +8,19 @@ CREATE TABLE `users` (
   `display_name` VARCHAR(255) NOT NULL,
   `password` VARCHAR(255) NOT NULL,
   `description` TEXT NOT NULL,
+  `icon_hash` VARCHAR(255) NOT NULL,
   UNIQUE `uniq_user_name` (`name`),
   INDEX `idx_user_name` (`name`)
 ) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
 
 -- プロフィール画像
 DROP TABLE IF EXISTS `icons`;
-CREATE TABLE `icons` (
-  `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `user_id` BIGINT NOT NULL,
-  `image` LONGBLOB NOT NULL,
-  INDEX `idx_user_id` (`user_id`)
-) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
+-- CREATE TABLE `icons` (
+--   `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+--   `user_id` BIGINT NOT NULL,
+--   `image` LONGBLOB NOT NULL,
+--   INDEX `idx_user_id` (`user_id`)
+-- ) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
 
 -- ユーザごとのカスタムテーマ
 DROP TABLE IF EXISTS `themes`;
