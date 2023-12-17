@@ -113,7 +113,7 @@ func getIconHandler(c echo.Context) error {
 
 	image, err := os.ReadFile(fmt.Sprintf("/tmp/icons/%s.jpg", username))
 	if err != nil {
-		return c.Blob(http.StatusOK, "image/jpeg", []byte(fallbackImage))
+		return c.File(fallbackImage)
 	}
 
 	return c.Blob(http.StatusOK, "image/jpeg", image)
@@ -393,7 +393,7 @@ func fillUserResponse(ctx context.Context, tx *sqlx.Tx, userModel UserModel) (Us
 	username := userModel.Name
 	image, err := os.ReadFile(fmt.Sprintf("/tmp/icons/%s.jpg", username))
 	if err != nil {
-		image = []byte(fallbackImage)
+		image, _ = os.ReadFile(fallbackImage)
 	}
 
 	iconHash := sha256.Sum256(image)
