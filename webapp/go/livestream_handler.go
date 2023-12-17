@@ -567,11 +567,11 @@ func fillLivestreamsResponse(ctx context.Context, tx *sqlx.Tx, livestreamModels 
 
 	for livestreamID, livestramTags := range livestreamIDToLivestreamTags {
 		for i := range livestramTags {
-			tag := Tag{}
-			if err := tx.GetContext(ctx, &tag, "SELECT * FROM tags WHERE id = ?", livestramTags[i].TagID); err != nil {
+			tagModel := TagModel{}
+			if err := tx.GetContext(ctx, &tagModel, "SELECT * FROM tags WHERE id = ?", livestramTags[i].TagID); err != nil {
 				return []Livestream{}, echo.NewHTTPError(http.StatusInternalServerError, "failed to get tag: "+err.Error())
 			}
-			livestreamIDToTags[livestreamID] = append(livestreamIDToTags[livestreamID], tag)
+			livestreamIDToTags[livestreamID] = append(livestreamIDToTags[livestreamID], Tag(tagModel))
 		}
 	}
 
