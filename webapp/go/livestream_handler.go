@@ -566,11 +566,22 @@ func fillLivestreamsResponse(ctx context.Context, tx *sqlx.Tx, livestreamModels 
 	}
 
 	for livestreamID, livestramTags := range livestreamIDToLivestreamTags {
+		livestreamTagsIDs := make([]int64, len(livestramTags))
 		for i := range livestramTags {
-			tagModel := TagModel{}
-			if err := tx.GetContext(ctx, &tagModel, "SELECT * FROM tags WHERE id = ?", livestramTags[i].TagID); err != nil {
-				return []Livestream{}, echo.NewHTTPError(http.StatusInternalServerError, "failed to get tag: "+err.Error())
-			}
+			livestreamTagsIDs[i] = livestramTags[i].TagID
+		}
+
+		tagModels := []TagModel{}
+		query, params, err = sqlx.In("SELECT * FROM tags WHERE id IN (?)", livestreamTagsIDs)
+		if err != nil {
+			return []Livestream{}, echo.NewHTTPError(http.StatusInternalServerError, "failed to construct query: "+err.Error())
+		}
+
+		if err := tx.SelectContext(ctx, &tagModels, query, params...); err != nil {
+			return []Livestream{}, echo.NewHTTPError(http.StatusInternalServerError, "failed to get tags tags: "+err.Error())
+		}
+
+		for _, tagModel := range tagModels {
 			livestreamIDToTags[livestreamID] = append(livestreamIDToTags[livestreamID], Tag(tagModel))
 		}
 	}
